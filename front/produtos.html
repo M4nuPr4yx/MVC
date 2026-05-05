@@ -1,211 +1,65 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-    <meta charset="UTF-8">
-    <title>Cadastro de Produto</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <meta charset="UTF-8">
+  <title>Cadastro de Produtos</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
 
-<body class="bg-gray-100">
+<div class="bg-white shadow-lg rounded-xl p-8 w-full max-w-2xl">
+  <h1 class="text-2xl font-bold mb-6 text-center">Cadastro de Produto</h1>
 
-    <div class="bg-white p-4" style="max-width: 400px; margin: 20px auto;">
+  <form id="formProduto" class="grid grid-cols-2 gap-4">
+    <input name="nome" placeholder="Nome do Produto" class="col-span-2 p-2 border rounded" required>
+    
+    <textarea name="descricao" placeholder="Descrição" class="col-span-2 p-2 border rounded"></textarea>
 
-        <h2 class="text-lg mb-4">Cadastro de Produto</h2>
+    <input name="preco" type="number" step="0.01" placeholder="Preço (Ex: 19.90)" class="p-2 border rounded" required>
+    
+    <input name="estoque" type="number" placeholder="Quantidade em Estoque" class="p-2 border rounded" required>
 
-        <button onclick="abrirModal()" class="bg-blue-500 text-white p-2 mb-2">Listar Produtos</button>
-        <button onclick="limparFormulario()" class="bg-gray-500 text-white p-2 mb-4">Novo</button>
+    <button type="submit" class="col-span-2 bg-green-500 text-white p-2 rounded hover:bg-green-600 font-bold">
+      Salvar Produto
+    </button>
+  </form>
 
-        <form id="formProduto">
+  <p id="msg" class="mt-4 text-center"></p>
+  <div class="text-center mt-4">
+      <a href="index.html" class="text-blue-500 underline">Ir para Cadastro de Pessoas</a>
+  </div>
+</div>
 
-            <input type="hidden" id="produto_id">
+<script>
+document.getElementById("formProduto").addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-            <label>Nome *</label>
-            <input type="text" id="nome" class="w-full border p-2 mb-3" required>
+  const formData = new FormData(e.target);
+  const data = Object.fromEntries(formData.entries());
 
-            <label>Descrição</label>
-            <textarea id="descricao" class="w-full border p-2 mb-3" rows="3"></textarea>
+  try {
+    const response = await fetch("http://localhost:3000/produtos", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
 
-            <label>Preço (R$) *</label>
-            <input type="number" id="preco" class="w-full border p-2 mb-3" step="0.01" min="0" required>
+    const result = await response.json();
 
-            <label>Estoque *</label>
-            <input type="number" id="estoque" class="w-full border p-2 mb-3" min="0" required>
+    if(result.success) {
+        document.getElementById("msg").innerText = "Produto cadastrado com sucesso!";
+        document.getElementById("msg").className = "mt-4 text-center text-green-600";
+        e.target.reset();
+    } else {
+        throw new Error(result.error);
+    }
 
-            <label>Categoria</label>
-            <input type="text" id="categoria" class="w-full border p-2 mb-3">
-
-            <button type="submit" class="bg-green-500 text-white p-2 w-full mt-3">Salvar</button>
-
-        </form>
-    </div>
-
-    <!-- MODAL -->
-    <div id="modalPesquisa" style="display:none;" class="fixed inset-0 bg-black bg-opacity-50">
-
-        <div class="bg-white p-4" style="max-width: 800px; margin: 50px auto;">
-
-            <h3 class="mb-3">Lista de Produtos</h3>
-
-            <button onclick="fecharModal()" class="bg-red-500 text-white p-1 mb-3">Fechar</button>
-
-            <div id="listaProdutos" class="overflow-auto max-h-96"></div>
-
-        </div>
-    </div>
-
-    <script>
-        const BASE_URL = 'http://localhost:3000';
-
-        const form = document.getElementById('formProduto');
-        const inputId = document.getElementById('produto_id');
-        const modal = document.getElementById('modalPesquisa');
-        const listaContainer = document.getElementById('listaProdutos');
-
-        // Validação simples
-        function validarFormulario() {
-            const nome = document.getElementById('nome').value.trim();
-            const preco = parseFloat(document.getElementById('preco').value);
-            const estoque = parseInt(document.getElementById('estoque').value);
-            
-            if (!nome) return 'Nome é obrigatório';
-            if (isNaN(preco) || preco <= 0) return 'Preço inválido';
-            if (isNaN(estoque) || estoque < 0) return 'Estoque inválido';
-            return null;
-        }
-
-        // CRUD
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            const erro = validarFormulario();
-            if (erro) return alert(erro);
-
-            const payload = {
-                nome: document.getElementById('nome').value,
-                descricao: document.getElementById('descricao').value,
-                preco: parseFloat(document.getElementById('preco').value),
-                estoque: parseInt(document.getElementById('estoque').value),
-                categoria: document.getElementById('categoria').value
-            };
-
-            const id = inputId.value;
-            const url = id ? `${BASE_URL}/atualizar-produto/${id}` : `${BASE_URL}/criar-produto`;
-            const method = id ? 'PUT' : 'POST';
-
-            try {
-                const res = await fetch(url, {
-                    method,
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (res.ok) {
-                    alert(id ? 'Produto atualizado!' : 'Produto criado!');
-                    limparFormulario();
-                    fecharModal();
-                } else {
-                    alert('Erro ao salvar');
-                }
-            } catch {
-                alert('Erro de conexão. Certifique-se que o servidor está rodando.');
-            }
-        });
-
-        async function carregarProdutos() {
-            try {
-                console.log('Fetching produtos...');
-                const res = await fetch(`${BASE_URL}/listar-produtos`);
-                console.log('Response status:', res.status);
-                const produtos = await res.json();
-                console.log('Produtos:', produtos);
-
-                if (!Array.isArray(produtos)) {
-                    throw new Error('Resposta não é array');
-                }
-
-                listaContainer.innerHTML = `
-                    <table class="w-full border mb-4">
-                        <thead>
-                            <tr class="bg-gray-200">
-                                <th class="border p-2">ID</th>
-                                <th class="border p-2">Nome</th>
-                                <th class="border p-2">Descrição</th>
-                                <th class="border p-2">Preço</th>
-                                <th class="border p-2">Estoque</th>
-                                <th class="border p-2">Categoria</th>
-                                <th class="border p-2">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${produtos.map(p => `
-                                <tr>
-                                    <td class="border p-2">${p.id}</td>
-                                    <td class="border p-2">${p.nome}</td>
-                                    <td class="border p-2">${p.descricao || ''}</td>
-                                    <td class="border p-2">R$ ${parseFloat(p.preco).toFixed(2)}</td>
-                                    <td class="border p-2">${p.estoque}</td>
-                                    <td class="border p-2">${p.categoria || ''}</td>
-                                    <td class="border p-2">
-                                        <button onclick="editarProduto(${p.id})" class="bg-yellow-500 text-white px-2 py-1 text-sm mr-1">Editar</button>
-                                        <button onclick="deletarProduto(${p.id})" class="bg-red-500 text-white px-2 py-1 text-sm">Excluir</button>
-                                    </td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                `;
-            } catch (error) {
-                console.error('Erro carregarProdutos:', error);
-                listaContainer.innerHTML = `<p>Erro ao carregar: ${error.message}</p>`;
-            }
-        }
-
-        async function editarProduto(id) {
-            try {
-                const res = await fetch(`${BASE_URL}/listar-produtos`);
-                const produtos = await res.json();
-                const produto = produtos.find(p => p.id === id);
-
-                if (produto) {
-                    inputId.value = produto.id;
-                    document.getElementById('nome').value = produto.nome;
-                    document.getElementById('descricao').value = produto.descricao || '';
-                    document.getElementById('preco').value = produto.preco;
-                    document.getElementById('estoque').value = produto.estoque;
-                    document.getElementById('categoria').value = produto.categoria || '';
-                }
-            } catch {
-                alert('Erro ao carregar produto');
-            }
-        }
-
-        async function deletarProduto(id) {
-            if (!confirm('Excluir este produto?')) return;
-
-            try {
-                await fetch(`${BASE_URL}/remover-produto/${id}`, { method: 'DELETE' });
-                carregarProdutos();
-            } catch {
-                alert('Erro ao excluir');
-            }
-        }
-
-        function limparFormulario() {
-            form.reset();
-            inputId.value = '';
-        }
-
-        function abrirModal() {
-            modal.style.display = 'block';
-            carregarProdutos();
-        }
-
-        function fecharModal() {
-            modal.style.display = 'none';
-        }
-    </script>
-
+  } catch (error) {
+    document.getElementById("msg").innerText = "Erro ao cadastrar produto!";
+    document.getElementById("msg").className = "mt-4 text-center text-red-600";
+    console.error(error);
+  }
+});
+</script>
 </body>
-
 </html>
