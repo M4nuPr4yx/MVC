@@ -7,24 +7,23 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-require('dotenv').config();
+// Configuração do banco de dados
 const dbConfig = {
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || 'exemplos',
-    port: process.env.DB_PORT || 3306
+    host: 'localhost',
+    user: 'root', // Alterar para o usuário correspondente
+    password: '', // Alterar para a senha correspondente
+    database: 'exemplos'
 };
 
 const pool = mysql.createPool(dbConfig);
 
 pool.getConnection()
     .then(connection => {
-        console.log(' Conexão com o banco de dados MySQL estabelecida com sucesso!');
+        console.log('✅ Conexão com o banco de dados MySQL estabelecida com sucesso!');
         connection.release(); // Libera a conexão de volta para o pool
     })
     .catch(error => {
-        console.error(' Falha ao conectar ao banco de dados MySQL:');
+        console.error('❌ Falha ao conectar ao banco de dados MySQL:');
         console.error(error.message);
     });
 
@@ -123,11 +122,7 @@ app.delete('/pessoas/:id', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
-
-// Rotas de Produtos
-
-// Rota GET - Listar todos os produtos
-app.get('/listar-produtos', async (req, res) => {
+app.get('/produtos', async (req, res) => {
     try {
         const [rows] = await pool.execute('SELECT * FROM produtos');
         res.json(rows);
@@ -136,17 +131,25 @@ app.get('/listar-produtos', async (req, res) => {
     }
 });
 
-// Rota POST - Criar produto
-app.post('/criar-produto', async (req, res) => {
-    const { nome, descricao, preco, estoque, categoria } = req.body;
+// Rota POST - Criar
+app.post('/produtos', async (req, res) => {
+    const { 
+        nome, descricao, preco, estoque, categoria 
+    } = req.body;
 
     const query = `
         INSERT INTO produtos 
-        (nome, descricao, preco, estoque, categoria) 
+        (nome, descricao, preco, estoque, categoria ) 
         VALUES (?, ?, ?, ?, ?)
     `;
     
-    const values = [nome, descricao || null, preco, estoque, categoria || null];
+    const values = [
+        nome , 
+        descricao , 
+        preco || null,
+        estoque , 
+        categoria || null
+    ];
 
     try {
         const [result] = await pool.execute(query, values);
@@ -156,24 +159,28 @@ app.post('/criar-produto', async (req, res) => {
     }
 });
 
-// Rota PUT - Atualizar produto
-app.put('/atualizar-produto/:id', async (req, res) => {
+// Rota PUT - Atualizar
+app.put('/produtos/:id', async (req, res) => {
     const { id } = req.params;
-    const { nome, descricao, preco, estoque, categoria } = req.body;
+    const { 
+        nome, descricao, preco, estoque, categoria  
+    } = req.body;
 
     const query = `
         UPDATE produtos 
-        SET nome = ?, descricao = ?, preco = ?, estoque = ?, categoria = ? 
+        SET nome = ?, descricao = ?, preco = ?, estoque = ?, categoria = ?
         WHERE id = ?
     `;
     
-    const values = [nome, descricao || null, preco, estoque, categoria || null, id];
+    const values = [
+        nome, descricao, estoque || null, preco || null, categoria
+    ];
 
     try {
         const [result] = await pool.execute(query, values);
         
         if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'Produto não encontrado' });
+            return res.status(404).json({ message: 'Registro não encontrado' });
         }
         res.json({ id, ...req.body });
     } catch (error) {
@@ -181,15 +188,15 @@ app.put('/atualizar-produto/:id', async (req, res) => {
     }
 });
 
-// Rota DELETE - Remover produto
-app.delete('/remover-produto/:id', async (req, res) => {
+// Rota DELETE - Remover
+app.delete('/produtos/:id', async (req, res) => {
     const { id } = req.params;
 
     try {
         const [result] = await pool.execute('DELETE FROM produtos WHERE id = ?', [id]);
 
         if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'Produto não encontrado' });
+            return res.status(404).json({ message: 'Registro não encontrado' });
         }
         res.status(204).send();
     } catch (error) {
@@ -200,5 +207,5 @@ app.delete('/remover-produto/:id', async (req, res) => {
 // Inicialização
 const PORT = 3000;
 app.listen(PORT, () => {
-    console.log(` Servidor rodando em http://localhost:${PORT}`);
+    console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
 });
