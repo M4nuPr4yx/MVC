@@ -1,65 +1,251 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Cadastro de Produtos</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .top-buttons {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        form {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 400px;
+            margin: auto;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-size: 14px;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        input:focus {
+            border-color: #4CAF50;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button[type="submit"] {
+            background: #4CAF50;
+            color: white;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        button[type="button"] {
+            background: #4CAF50;
+            color: white;
+            margin-right: 10px;
+        }
+
+        /* Modal */
+        #modalPesquisa {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 20px;
+            width: 90%;
+            max-width: 700px;
+            border-radius: 10px;
+        }
+
+        .btn-fechar {
+            float: right;
+            cursor: pointer;
+            color: red;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #f0f0f0;
+        }
+
+        .btn-acao:first-child {
+            background: #ffc107;
+        }
+
+        .btn-acao:last-child {
+            background: #f44336;
+            color: white;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
 
-<div class="bg-white shadow-lg rounded-xl p-8 w-full max-w-2xl">
-  <h1 class="text-2xl font-bold mb-6 text-center">Cadastro de Produto</h1>
+<body>
 
-  <form id="formProduto" class="grid grid-cols-2 gap-4">
-    <input name="nome" placeholder="Nome do Produto" class="col-span-2 p-2 border rounded" required>
-    
-    <textarea name="descricao" placeholder="Descrição" class="col-span-2 p-2 border rounded"></textarea>
+    <h2>Cadastro</h2>
 
-    <input name="preco" type="number" step="0.01" placeholder="Preço (Ex: 19.90)" class="p-2 border rounded" required>
-    
-    <input name="estoque" type="number" placeholder="Quantidade em Estoque" class="p-2 border rounded" required>
+    <div class="top-buttons">
+        <button type="button" onclick="abrirModal()">Pesquisar</button>
+        <button type="button" onclick="limparFormulario()">Novo</button>
+    </div>
 
-    <button type="submit" class="col-span-2 bg-green-500 text-white p-2 rounded hover:bg-green-600 font-bold">
-      Salvar Produto
-    </button>
-  </form>
+    <form id="formPessoa">
+        <input type="hidden" id="pessoa_id">
 
-  <p id="msg" class="mt-4 text-center"></p>
-  <div class="text-center mt-4">
-      <a href="index.html" class="text-blue-500 underline">Ir para Cadastro de Pessoas</a>
-  </div>
-</div>
+        <div class="form-group">
+            <label>Nome</label>
+            <input type="text" id="nome">
+        </div>
 
-<script>
-document.getElementById("formProduto").addEventListener("submit", async (e) => {
-  e.preventDefault();
+        <div class="form-group">
+            <label>Descrição</label>
+            <input type="text" id="descricao">
+        </div>
 
-  const formData = new FormData(e.target);
-  const data = Object.fromEntries(formData.entries());
+        <div class="form-group">
+            <label>Preço</label>
+            <input type="number" id="preco">
+        </div>
 
-  try {
-    const response = await fetch("http://localhost:3000/produtos", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    });
+        <div class="form-group">
+            <label>Estoque</label>
+            <input type="number" id="estoque">
+        </div>
 
-    const result = await response.json();
+        <div class="form-group">
+            <label>Categoria</label>
+            <input type="text" id="categoria">
+        </div>
 
-    if(result.success) {
-        document.getElementById("msg").innerText = "Produto cadastrado com sucesso!";
-        document.getElementById("msg").className = "mt-4 text-center text-green-600";
-        e.target.reset();
-    } else {
-        throw new Error(result.error);
-    }
+        <button type="submit">Salvar</button>
+    </form>
 
-  } catch (error) {
-    document.getElementById("msg").innerText = "Erro ao cadastrar produto!";
-    document.getElementById("msg").className = "mt-4 text-center text-red-600";
-    console.error(error);
-  }
-});
-</script>
+    <!-- Modal -->
+    <div id="modalPesquisa">
+        <div class="modal-content">
+            <span class="btn-fechar" onclick="fecharModal()">Fechar</span>
+            <h3>Registros</h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Preço</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/produtos';
+
+        const form = document.getElementById('formPessoa');
+        const tabela = document.getElementById('tabela');
+        const modal = document.getElementById('modalPesquisa');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const payload = {
+                nome: nome.value,
+                descricao: descricao.value,
+                preco: preco.value,
+                estoque: estoque.value,
+                categoria: categoria.value
+            };
+
+            await fetch(API_URL, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+
+            alert('Salvo!');
+            limparFormulario();
+        });
+
+        async function carregar() {
+            const res = await fetch(API_URL);
+            const data = await res.json();
+
+            tabela.innerHTML = '';
+
+            data.forEach(p => {
+                tabela.innerHTML += `
+                    <tr>
+                        <td>${p.id}</td>
+                        <td>${p.nome}</td>
+                        <td>${p.preco}</td>
+                        <td>
+                            <button onclick="editar(${p.id})">Editar</button>
+                            <button onclick="deletar(${p.id})">Excluir</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function abrirModal() {
+            modal.style.display = 'block';
+            carregar();
+        }
+
+        function fecharModal() {
+            modal.style.display = 'none';
+        }
+
+        function limparFormulario() {
+            form.reset();
+        }
+    </script>
+
 </body>
 </html>

@@ -1,145 +1,217 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Cadastro de Pessoa</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Pessoas</title>
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            background: #4CAF50;
+            color: white;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        form {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 500px;
+            margin: 20px auto;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        input {
+            padding: 8px;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #4CAF50;
+        }
+
+        .error {
+            color: red;
+            font-size: 12px;
+            display: none;
+        }
+
+        hr {
+            margin: 20px 0;
+        }
+
+        /* Modal melhorado */
+        #modalPesquisa {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background: #fff;
+            margin: 5% auto;
+            padding: 20px;
+            width: 90%;
+            max-width: 800px;
+            border-radius: 10px;
+        }
+
+        .btn-fechar {
+            float: right;
+            cursor: pointer;
+            color: red;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th {
+            background: #4CAF50;
+            color: white;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+
+        tr:hover {
+            background: #f9f9f9;
+        }
+
+        .btn-acao {
+            padding: 5px 8px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            background: #2196F3;
+            color: white;
+        }
+
+        .btn-acao:last-child {
+            background: #f44336;
+        }
+    </style>
 </head>
+<body>
 
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <h2>Cadastro de Pessoas</h2>
+    
+    <button type="button" onclick="abrirModal()">Pesquisar Cadastros</button>
+    <button type="button" onclick="limparFormulario()">Novo Cadastro</button>
+    <hr>
 
-<div class="bg-white shadow-lg rounded-xl p-8 w-full max-w-2xl">
-  <h1 class="text-2xl font-bold mb-6 text-center">Cadastro de Pessoa</h1>
+    <form id="formPessoa">
+        <input type="hidden" id="pessoa_id" name="pessoa_id">
 
-  <form id="formCadastro" class="grid grid-cols-2 gap-4">
+        <div class="form-group">
+            <label>CPF ou CNPJ</label>
+            <input type="text" id="documento" name="documento" maxlength="18" required>
+        </div>
 
-    <!-- CPF / CNPJ -->
-    <input id="documento" name="documento"
-      placeholder="CPF ou CNPJ"
-      class="col-span-2 p-2 border rounded" required>
-
-    <input name="nome_razao_social"
-      placeholder="Nome ou Razão Social"
-      class="col-span-2 p-2 border rounded" required>
-
-    <input name="nome_social_fantasia"
-      placeholder="Nome Fantasia"
-      class="col-span-2 p-2 border rounded">
-
-    <!-- CEP -->
-    <input id="cep" name="cep"
-      placeholder="CEP"
-      class="p-2 border rounded">
-
-    <input id="endereco" name="endereco"
-      placeholder="Endereço"
-      class="p-2 border rounded">
-
-    <input name="numero"
-      placeholder="Número"
-      class="p-2 border rounded">
-
-    <input id="bairro" name="bairro"
-      placeholder="Bairro"
-      class="p-2 border rounded">
-
-    <input id="cidade" name="cidade"
-      placeholder="Cidade"
-      class="p-2 border rounded">
-
-    <input id="estado" name="estado"
-      placeholder="Estado"
-      class="p-2 border rounded">
-
-    <input name="email" type="email"
-      placeholder="E-mail"
-      class="col-span-2 p-2 border rounded">
-
-    <button type="submit"
-      class="col-span-2 bg-blue-500 text-white p-2 rounded hover:bg-blue-600">
-      Salvar
-    </button>
-
-  </form>
-
-  <p id="msg" class="mt-4 text-center"></p>
-</div>
-
-<script>
-// 🧠 MÁSCARA CPF/CNPJ
-const docInput = document.getElementById("documento");
-
-docInput.addEventListener("input", (e) => {
-  let valor = e.target.value.replace(/\D/g, "");
-
-  if (valor.length <= 11) {
-    valor = valor.replace(/(\d{3})(\d)/, "$1.$2");
-    valor = valor.replace(/(\d{3})(\d)/, "$1.$2");
-    valor = valor.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-  } else {
-    valor = valor.replace(/^(\d{2})(\d)/, "$1.$2");
-    valor = valor.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
-    valor = valor.replace(/\.(\d{3})(\d)/, ".$1/$2");
-    valor = valor.replace(/(\d{4})(\d)/, "$1-$2");
-  }
-
-  e.target.value = valor;
-});
+        <div class="form-group">
+            <label>Nome ou Razão Social</label>
+            <input type="text" id="nome_razao_social" name="nome_razao_social" required>
+        </div>
 
 
-// 📦 BUSCAR CEP AUTOMÁTICO
-document.getElementById("cep").addEventListener("input", async (e) => {
-  let cep = e.target.value.replace(/\D/g, "");
+        <div class="form-group">
+            <label>CEP</label>
+            <input type="text" id="cep" name="cep" maxlength="9" required>
+        </div>
 
-  if (cep.length !== 8) return;
+        <div class="form-group">
+            <label>Endereço</label>
+            <input type="text" id="endereco" name="endereco" required>
+        </div>
 
-  try {
-    const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-    const data = await res.json();
+        <div class="form-group">
+            <label>Número</label>
+            <input type="text" id="numero" name="numero" required>
+        </div>
 
-    if (data.erro) {
-      alert("CEP não encontrado!");
-      return;
-    }
+        <div class="form-group">
+            <label>Bairro</label>
+            <input type="text" id="bairro" name="bairro" required>
+        </div>
 
-    document.getElementById("endereco").value = data.logradouro || "";
-    document.getElementById("bairro").value = data.bairro || "";
-    document.getElementById("cidade").value = data.localidade || "";
-    document.getElementById("estado").value = data.uf || "";
+        <div class="form-group">
+            <label>Cidade</label>
+            <input type="text" id="cidade" name="cidade" required>
+        </div>
 
-  } catch (error) {
-    console.error("Erro ao buscar CEP:", error);
-  }
-});
+        <div class="form-group">
+            <label>Estado</label>
+            <input type="text" id="estado" name="estado" maxlength="2" required>
+        </div>
 
+        <div class="form-group">
+            <label>E-mail</label>
+            <input type="email" id="email" name="email" required>
+            <span id="emailError" class="error">E-mail inválido</span>
+        </div>
 
-// 🚀 ENVIAR PARA BACKEND
-document.getElementById("formCadastro").addEventListener("submit", async (e) => {
-  e.preventDefault();
+        <button type="submit" id="btnSalvar">Salvar</button>
+    </form>
 
-  const formData = new FormData(e.target);
-  const data = Object.fromEntries(formData.entries());
+    <div id="modalPesquisa">
+        <div class="modal-content">
+            <span class="btn-fechar" onclick="fecharModal()">X Fechar</span>
+            <h3>Registros</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome/Razão</th>
+                        <th>Documento</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaPessoas"></tbody>
+            </table>
+        </div>
+    </div>
 
-  try {
-    const response = await fetch("http://localhost:3000/pessoas", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(data)
-    });
-
-    await response.json();
-
-    document.getElementById("msg").innerText = "Cadastrado com sucesso!";
-    e.target.reset();
-
-  } catch (error) {
-    document.getElementById("msg").innerText = "Erro ao cadastrar!";
-    console.error(error);
-  }
-});
-</script>
-
-</body>
-</html>
+   
